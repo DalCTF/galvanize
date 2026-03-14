@@ -1,6 +1,8 @@
 # Changelog
 
 ## vX.X.X (YYYY-MM-DD)
+
+## v0.6.0 (2026-03-14)
 ### Added
 - Bake `data/playbooks` into the `galvanize-instancer` runtime image so default playbooks are available even without a host bind mount
 - Support optional protocol hints for TCP `published_ports` (for example `22/ssh` or `8080:80/http`) and use the hint in generated connection info URLs
