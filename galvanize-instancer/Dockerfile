@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y curl pipx ssh-client tini \
     && pipx install --include-deps --global ansible
 WORKDIR /app
 RUN mkdir "data"
+COPY ./data/playbooks ./data/playbooks
 RUN mkdir -p /home/galvanize/.ssh \
     && chown -R galvanize:galvanize /home/galvanize/ \
     && chmod 700 /home/galvanize/.ssh
