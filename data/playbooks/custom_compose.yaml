@@ -2,20 +2,29 @@
 - hosts: all
   gather_facts: false
   tasks:
+    - name: Parse définition du compose en string
+      ansible.builtin.set_fact:
+        compose_dict: "{{ compose_definition | from_yaml }}"
+      tags:
+        - always
+
     - name: Déploiement du docker-compose
       community.docker.docker_compose_v2:
-        definition: "{{ compose_definition }}"
+        definition: "{{ compose_dict }}"
         project_name: "{{ compose_project }}"
-        pull: if_not_present
-      tags: create
+        pull: missing
+      tags:
+        - create
 
     - name: Arrêt des conteneurs
-      ansible.builtin.command: "docker compose -p {{ compose-project }} kill"
-      tags: delete
+      ansible.builtin.command: "docker compose -p {{ compose_project }} kill"
+      tags:
+        - delete
 
     - name: Suppression du docker-compose
       community.docker.docker_compose_v2:
-        definition: "{{ compose_definition }}"
-        project_name: "{{ compose-project }}"
+        definition: "{{ compose_dict }}"
+        project_name: "{{ compose_project }}"
         state: absent
-      tags: delete
+      tags:
+        - delete
