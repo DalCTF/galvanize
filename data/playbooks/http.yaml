@@ -18,6 +18,7 @@
           labels:
             - "traefik.enable=true"
             - "traefik.http.routers.site_{{ compose_project }}.rule=Host(`{{ domain_name }}`)"
+            - "traefik.http.services.site_{{ compose_project }}.loadbalancer.server.port={{ http_port | default(80) }}"
           networks:
             - "{{ traefik_network }}"
           restart: unless-stopped

@@ -8,6 +8,7 @@ playbook_name: http  # Use 'http' for web challenges, 'tcp' for TCP challenges, 
 deploy_parameters:
   image: nginx:alpine  # Docker image to deploy
   unique: false  # Set to true if there needs to be a unique instance for all players
+  # http_port: 8080  # Port the container listens on for HTTP traffic (default: 80, only for 'http' playbooks)
   resource_limits: # Optional: override global default_resource_limits for this challenge
     # cpus: "2"       # CPU limit (overrides config default)
     # memory: "1G"    # Memory limit (overrides config default)
