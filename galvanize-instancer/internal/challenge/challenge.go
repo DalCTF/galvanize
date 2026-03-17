@@ -7,9 +7,33 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/28Pollux28/galvanize/pkg/config"
 	yaml "github.com/oasdiff/yaml3"
 	"go.uber.org/zap"
 )
+
+func toStringField(m map[string]interface{}, key string) string {
+	if v, ok := m[key]; ok {
+		if s, ok := v.(string); ok {
+			return s
+		}
+	}
+	return ""
+}
+
+func toIntField(m map[string]interface{}, key string) int {
+	if v, ok := m[key]; ok {
+		switch n := v.(type) {
+		case int:
+			return n
+		case int64:
+			return int(n)
+		case float64:
+			return int(n)
+		}
+	}
+	return 0
+}
 
 // ChallengeIndexer is the interface for looking up and managing challenges.
 // Consumers should depend on this interface rather than the concrete ChallengeIndex.
@@ -34,6 +58,7 @@ type Challenge struct {
 	PlaybookName     string                 `yaml:"playbook_name"`
 	Type             string                 `yaml:"type"`
 	Unique           bool                   `yaml:"-"`
+	ResourceLimits   config.ResourceLimits  `yaml:"-"`
 	DeployParameters map[string]interface{} `yaml:"deploy_parameters"`
 }
 
@@ -131,6 +156,14 @@ func parseChallenge(challengeFilePath string) (*Challenge, error) {
 	if unique, ok := challenge.DeployParameters["unique"]; ok {
 		if b, ok := unique.(bool); ok && b {
 			challenge.Unique = true
+		}
+	}
+
+	if rl, ok := challenge.DeployParameters["resource_limits"].(map[string]interface{}); ok {
+		challenge.ResourceLimits = config.ResourceLimits{
+			CPUs:      toStringField(rl, "cpus"),
+			Memory:    toStringField(rl, "memory"),
+			PidsLimit: toIntField(rl, "pids_limit"),
 		}
 	}
 

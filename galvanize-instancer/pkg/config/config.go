@@ -56,8 +56,9 @@ type InstancerConfig struct {
 	RandomizedPortMax         int                    `mapstructure:"randomized_port_max,omitempty"`        // Upper bound for randomized host ports (default: 60999)
 	MaxConcurrentAnsible      int                    `mapstructure:"max_concurrent_ansible,omitempty"`      // Maximum concurrent Ansible executions (default: 5) - deprecated, use NumWorkers
 	Redis                     RedisConfig            `mapstructure:"redis"`                                 // Redis configuration for job queue
-	NumWorkers                int                    `mapstructure:"num_workers,omitempty"`                 // Number of Ansible workers (default: 10)
-	Metrics                   MetricsConfig          `mapstructure:"metrics"`                               // Metrics endpoint configuration
+	NumWorkers                int                    `mapstructure:"num_workers,omitempty"`                  // Number of Ansible workers (default: 10)
+	Metrics                   MetricsConfig          `mapstructure:"metrics"`                                // Metrics endpoint configuration
+	DefaultResourceLimits     ResourceLimits         `mapstructure:"default_resource_limits"`                // Default container resource limits applied to all deployments
 }
 
 type RedisConfig struct {
@@ -70,6 +71,30 @@ type AnsibleConfig struct {
 	Inventory  string `mapstructure:"inventory"`   // List of hosts or path to inventory file, e.g., "deployer_host,1.2.3.4,"
 	PrivateKey string `mapstructure:"private_key"` // Path to the private key for SSH access
 	User       string `mapstructure:"user"`        // SSH user
+}
+
+// ResourceLimits defines container resource constraints applied via Docker Compose.
+// CPUs and Memory map to deploy.resources.limits; PidsLimit maps to the service-level pids_limit.
+type ResourceLimits struct {
+	CPUs      string `mapstructure:"cpus" yaml:"cpus,omitempty"`           // e.g. "0.5", "1", "2"
+	Memory    string `mapstructure:"memory" yaml:"memory,omitempty"`       // e.g. "256M", "512M", "1G"
+	PidsLimit int    `mapstructure:"pids_limit" yaml:"pids_limit,omitempty"` // e.g. 256, 512
+}
+
+// MergeResourceLimits returns a ResourceLimits where non-zero fields in overrides
+// take precedence over defaults.
+func MergeResourceLimits(defaults, overrides ResourceLimits) ResourceLimits {
+	result := defaults
+	if overrides.CPUs != "" {
+		result.CPUs = overrides.CPUs
+	}
+	if overrides.Memory != "" {
+		result.Memory = overrides.Memory
+	}
+	if overrides.PidsLimit > 0 {
+		result.PidsLimit = overrides.PidsLimit
+	}
+	return result
 }
 
 var (

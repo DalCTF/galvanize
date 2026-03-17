@@ -24,6 +24,32 @@ func generateRandomID() string {
 	return hex.EncodeToString(b)
 }
 
+// BuildResourceOverrides converts merged ResourceLimits into a map suitable
+// for Ansible's combine filter. The resulting dict is merged into each Docker
+// Compose service definition by the playbooks.
+func BuildResourceOverrides(rl config.ResourceLimits) map[string]interface{} {
+	limits := map[string]interface{}{}
+	if rl.CPUs != "" {
+		limits["cpus"] = rl.CPUs
+	}
+	if rl.Memory != "" {
+		limits["memory"] = rl.Memory
+	}
+
+	overrides := map[string]interface{}{}
+	if len(limits) > 0 {
+		overrides["deploy"] = map[string]interface{}{
+			"resources": map[string]interface{}{
+				"limits": limits,
+			},
+		}
+	}
+	if rl.PidsLimit > 0 {
+		overrides["pids_limit"] = rl.PidsLimit
+	}
+	return overrides
+}
+
 func PreparePlaybook(conf *config.Config, tag string, challenge *challenge.Challenge, teamID string, params map[string]interface{}) (execute.Executor, *bytes.Buffer) {
 	composeProject := docker.BuildComposeProject(challenge.Unique, challenge.Name, teamID)
 
@@ -47,6 +73,12 @@ func PreparePlaybook(conf *config.Config, tag string, challenge *challenge.Chall
 	// Add deploy parameters to extra vars
 	maps.Copy(playbookOpts.ExtraVars, params)
 	maps.Copy(playbookOpts.ExtraVars, conf.Instancer.ExtraDeploymentParameters)
+
+	// Merge resource limits (challenge overrides config defaults) and pass to Ansible
+	merged := config.MergeResourceLimits(conf.Instancer.DefaultResourceLimits, challenge.ResourceLimits)
+	if resourceOverrides := BuildResourceOverrides(merged); len(resourceOverrides) > 0 {
+		playbookOpts.ExtraVars["resource_overrides"] = resourceOverrides
+	}
 
 	// Ensure env is always a map[string]interface{}.
 	// If the challenge has no "env" key, params["env"] is nil. Go-ansible

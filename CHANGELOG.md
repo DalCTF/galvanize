@@ -2,6 +2,9 @@
 
 ## vX.X.X (YYYY-MM-DD)
 
+### Added
+- Configurable container resource limits (CPU, memory, PID) with global defaults in `config.yaml` and per-challenge overrides in `deploy_parameters.resource_limits`
+
 ## v0.6.0 (2026-03-14)
 ### Added
 - Bake `data/playbooks` into the `galvanize-instancer` runtime image so default playbooks are available even without a host bind mount

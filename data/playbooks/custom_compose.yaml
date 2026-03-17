@@ -8,6 +8,25 @@
       tags:
         - always
 
+    - name: Save original services for resource limits
+      ansible.builtin.set_fact:
+        _original_services: "{{ compose_dict.services }}"
+      when: resource_overrides is defined and resource_overrides | length > 0
+      tags:
+        - create
+        - delete
+
+    - name: Apply resource limits to each service
+      ansible.builtin.set_fact:
+        compose_dict: "{{ compose_dict | combine({'services': {item.key: item.value | combine(resource_overrides, recursive=True)}}, recursive=True) }}"
+      loop: "{{ _original_services | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      when: resource_overrides is defined and resource_overrides | length > 0
+      tags:
+        - create
+        - delete
+
     - name: Déploiement du docker-compose
       community.docker.docker_compose_v2:
         definition: "{{ compose_dict }}"

@@ -4,25 +4,40 @@
   vars:
     domain_name: "{{ compose_project }}.{{ domain_root }}"
   tasks:
+    - name: Build base service definition
+      ansible.builtin.set_fact:
+        _web_service:
+          image: "{{ image }}"
+          environment: >-
+            {{
+              {
+                'ANSIBLE_DEPLOY_DOMAIN_NAME': domain_name
+              }
+              | combine(env | default({}))
+            }}
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.site_{{ compose_project }}.rule=Host(`{{ domain_name }}`)"
+          networks:
+            - "{{ traefik_network }}"
+          restart: unless-stopped
+      tags:
+        - create
+        - delete
+
+    - name: Apply resource limits to service
+      ansible.builtin.set_fact:
+        _web_service: "{{ _web_service | combine(resource_overrides, recursive=True) }}"
+      when: resource_overrides is defined and resource_overrides | length > 0
+      tags:
+        - create
+        - delete
+
     - name: Build compose definition
       ansible.builtin.set_fact:
         compose_definition:
           services:
-            web:
-              image: "{{ image }}"
-              environment: >-
-                {{
-                  {
-                    'ANSIBLE_DEPLOY_DOMAIN_NAME': domain_name
-                  }
-                  | combine(env | default({}))
-                }}
-              labels:
-                - "traefik.enable=true"
-                - "traefik.http.routers.site_{{ compose_project }}.rule=Host(`{{ domain_name }}`)"
-              networks:
-                - "{{ traefik_network }}"
-              restart: unless-stopped
+            web: "{{ _web_service }}"
           networks: "{{ {traefik_network: {'external': true}} }}"
       tags:
         - create
