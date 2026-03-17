@@ -1,0 +1,42 @@
+name: example-http
+author: YourName
+category: web
+
+type: zync
+
+# The 'http' playbook deploys a single container behind Traefik.
+# Traefik routes traffic based on a generated subdomain:
+#   <compose_project>.<instancer_host>  (e.g. polypwn-example-http-team1-a3f2c1.challs.example.com)
+playbook_name: http
+
+deploy_parameters:
+  image: nginx:alpine
+
+  # Set to true for a single shared instance across all teams.
+  unique: false
+
+  # Port the container listens on for HTTP traffic.
+  # Traefik will forward requests to this port.
+  # Default: 80
+  # http_port: 3000
+
+  # Override global default_resource_limits for this challenge.
+  # resource_limits:
+  #   cpus: "2"
+  #   memory: "1G"
+  #   pids_limit: 512
+
+  env:
+    FLAG: "flag{example_http}"
+
+value: 3
+
+description: |-
+  Example HTTP challenge. A web application is deployed behind Traefik
+  and accessible via a unique subdomain over HTTPS.
+
+flags:
+  - flag{example_http}
+
+tags:
+  - A:YourName

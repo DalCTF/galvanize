@@ -1,0 +1,49 @@
+name: example-custom-compose
+author: YourName
+category: web
+
+type: zync
+
+# The 'custom_compose' playbook deploys an arbitrary Docker Compose definition.
+# Use this when a challenge needs multiple services, custom networks, or volumes.
+# Resource limits are applied to every service in the definition.
+playbook_name: custom_compose
+
+deploy_parameters:
+  unique: false
+
+  # Inline Docker Compose definition.
+  # The project name is generated automatically.
+  compose_definition: |-
+    services:
+      web:
+        image: nginx:alpine
+        ports:
+          - "80:80"
+        environment:
+          FLAG: "flag{example_custom}"
+        depends_on:
+          - db
+      db:
+        image: postgres:16-alpine
+        environment:
+          POSTGRES_PASSWORD: secret
+
+  # Override global default_resource_limits for this challenge.
+  # Applied to every service in the compose definition.
+  # resource_limits:
+  #   cpus: "2"
+  #   memory: "1G"
+  #   pids_limit: 512
+
+value: 7
+
+description: |-
+  Example custom compose challenge. Multiple services are deployed using
+  an inline Docker Compose definition.
+
+flags:
+  - flag{example_custom}
+
+tags:
+  - A:YourName

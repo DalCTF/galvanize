@@ -1,0 +1,46 @@
+name: example-tcp
+author: YourName
+category: pwn
+
+type: zync
+
+# The 'tcp' playbook deploys a single container with directly published ports.
+# Connection info is built from the published ports and the instancer host:
+#   tcp://challs.example.com:<published_port>
+playbook_name: tcp
+
+deploy_parameters:
+  image: my-pwn-challenge:latest
+
+  unique: false
+
+  # Ports to expose from the container.
+  # Supported formats:
+  #   80              - publish container port 80 on a host port (random if randomize_published_ports is enabled)
+  #   22/ssh          - same, with a protocol hint so connection info shows ssh://host:<port>
+  #   8080:80/http    - fixed host-to-container mapping with http:// hint (never randomized)
+  published_ports:
+    - 1337
+    # - 22/ssh
+    # - 8080:80/http
+
+  # Override global default_resource_limits for this challenge.
+  # resource_limits:
+  #   cpus: "2"
+  #   memory: "1G"
+  #   pids_limit: 512
+
+  env:
+    FLAG: "flag{example_tcp}"
+
+value: 5
+
+description: |-
+  Example TCP challenge. A service is deployed with directly published
+  ports accessible at the instancer host.
+
+flags:
+  - flag{example_tcp}
+
+tags:
+  - A:YourName

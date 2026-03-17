@@ -5,6 +5,7 @@
 ### Added
 - Configurable container resource limits (CPU, memory, PID) with global defaults in `config.yaml` and per-challenge overrides in `deploy_parameters.resource_limits`
 - Optional `http_port` in `deploy_parameters` to configure which container port Traefik routes HTTP traffic to (defaults to 80)
+- Per-playbook example `challenge.yml` files (`example/http`, `example/tcp`, `example/custom_compose`)
 
 ## v0.6.0 (2026-03-14)
 ### Added
